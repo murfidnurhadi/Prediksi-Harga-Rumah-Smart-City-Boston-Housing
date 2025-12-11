@@ -125,17 +125,17 @@ if source == "Lokal (folder yang sama)":
 # 📌 PILIHAN 2: LOAD GITHUB RAW
 # ===============================
 elif source == "GitHub Raw URL":
-    url = st.sidebar.text_input(
-        "Masukkan URL GitHub RAW CSV:",
-        placeholder="https://raw.githubusercontent.com/username/repo/main/data.csv"
-    )
-    if url:
-        df = load_from_github(url)
-        if df is not None:
-            st.sidebar.success("📡 Berhasil load dari GitHub!")
-        else:
-            st.sidebar.error("❌ URL GitHub tidak valid.")
 
+    st.sidebar.info("Dataset otomatis di-load dari folder /dataset di GitHub.")
+
+    github_raw_url = "https://raw.githubusercontent.com/murfidnurhadi/Prediksi-Harga-Rumah-Smart-City-Boston-Housing/main/dataset/BostonHousing.csv"
+
+    df = load_from_github(github_raw_url)
+
+    if df is not None:
+        st.sidebar.success("📡 Berhasil load dataset dari GitHub!")
+    else:
+        st.sidebar.error("❌ Dataset tidak ditemukan di GitHub. Periksa nama file & repositori.")
 
 # ===============================
 # 📌 PILIHAN 3: LOAD GOOGLE DRIVE
