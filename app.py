@@ -1,6 +1,3 @@
-# ============================================
-# SMART CITY – Boston Housing Analytics Dashboard
-# ============================================
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -13,32 +10,38 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 
-# ----------------------------
 # PAGE CONFIG
-# ----------------------------
 st.set_page_config(
     page_title="Smart City • Boston Housing",
-    page_icon="🏙️",
+    page_icon="🌁",
     layout="wide"
 )
 
-st.title("🏙️ Smart City Dashboard – Boston Housing Analytics")
-st.markdown("""
-Sistem analitik untuk mendukung **perencanaan kota cerdas (smart city)**  
-berbasis prediksi harga rumah dan analisis faktor-faktor urban.
-""")
+st.markdown(
+    """
+    <style> 
+    /* Background utama dengan overlay gelap */
+    .stApp { 
+        background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                          url("https://images.unsplash.com/photo-1504384308090-c894fdcc538d"); 
+        background-size: cover; 
+        background-attachment: fixed; 
+    }
 
-# ==========================================================
-# 1. DATA LOADER (LOCAL FILE / GITHUB RAW / GOOGLE DRIVE / UPLOAD)
-# ==========================================================
+    /* Opsional: Membuat area konten utama sedikit lebih kontras */
+    .main .block-container {
+        background-color: rgba(0, 0, 0, 0.3);
+        border-radius: 20px;
+        padding: 40px;
+    }
+    </style> 
+    """, 
+    unsafe_allow_html=True 
+)
 
-import pandas as pd
-import streamlit as st
+st.title("🌁 Smart City Dashboard – Boston Housing Analytics")
 
-
-# ===============================
-# 📌 LOAD DATA DARI FILE LOKAL
-# ===============================
+# LOAD DATA DARI FILE LOKAL
 @st.cache_data
 def load_from_local():
     try:
@@ -47,10 +50,7 @@ def load_from_local():
     except:
         return None
 
-
-# ===============================
-# 📌 LOAD DATA DARI GITHUB RAW
-# ===============================
+# LOAD DATA DARI GITHUB RAW
 @st.cache_data
 def load_from_github(url):
     try:
@@ -59,35 +59,23 @@ def load_from_github(url):
     except:
         return None
 
-
-# ===============================
-# 📌 LOAD DATA DARI GOOGLE DRIVE
-# ===============================
+# LOAD DATA DARI GOOGLE DRIVE
 @st.cache_data
 def load_from_gdrive(share_url):
     try:
-        # Ambil file ID dari link Google Drive
+        # Ambil file ID dari link Google Drive dan Mengubah ke direct download URL
         file_id = share_url.split("/d/")[1].split("/")[0]
-
-        # Mengubah ke direct download URL
         dl_url = f"https://drive.google.com/uc?export=download&id={file_id}"
-
-        # Load CSV
+        # Load CSV dan membersihkan nama kolom
         df = pd.read_csv(dl_url)
-
-        # Bersihkan nama kolom
         df.columns = df.columns.str.lower().str.strip()
-
         return df
 
     except Exception as e:
         st.error(f"❌ Gagal memproses link Google Drive: {e}")
         return None
 
-
-# ===============================
-# 📌 LOAD DATA DARI FILE UPLOAD
-# ===============================
+# LOAD DATA DARI FILE UPLOAD
 @st.cache_data
 def load_from_upload(uploaded_file):
     try:
@@ -96,78 +84,54 @@ def load_from_upload(uploaded_file):
     except:
         return None
 
-
-# ===============================
-# 📌 SIDEBAR MENU LOAD DATA
-# ===============================
+# SIDEBAR MENU LOAD DATA
 st.sidebar.header("📂 Load Dataset Boston Housing")
-
 source = st.sidebar.selectbox(
     "Pilih sumber data:",
-    ["Lokal (folder yang sama)", "GitHub Raw URL", "Google Drive", "Upload Manual"]
+    ["Lokal", "GitHub", "Google Drive", "Upload Manual"]
 )
-
 df = None
 
-
-# ===============================
-# 📌 PILIHAN 1: LOAD LOKAL
-# ===============================
-if source == "Lokal (folder yang sama)":
+# PILIHAN 1: LOAD LOKAL
+if source == "Lokal":
     df = load_from_local()
     if df is not None:
-        st.sidebar.success("📁 Berhasil load file lokal.")
+        st.sidebar.success("📁 Dataset berhasil dimuat.")
     else:
         st.sidebar.error("❌ File lokal 'BostonHousing.csv' tidak ditemukan.")
 
-
-# ===============================
-# 📌 PILIHAN 2: LOAD GITHUB RAW
-# ===============================
-elif source == "GitHub Raw URL":
-
-    st.sidebar.info("Dataset otomatis di-load dari folder /dataset di GitHub.")
-
+# PILIHAN 2: LOAD GITHUB RAW
+elif source == "GitHub":
     github_raw_url = "https://raw.githubusercontent.com/murfidnurhadi/Prediksi-Harga-Rumah-Smart-City-Boston-Housing/main/dataset/BostonHousing.csv"
-
     df = load_from_github(github_raw_url)
-
     if df is not None:
-        st.sidebar.success("📡 Berhasil load dataset dari GitHub!")
+        st.sidebar.success("📡 Berhasil load dataset")
     else:
         st.sidebar.error("❌ Dataset tidak ditemukan di GitHub. Periksa nama file & repositori.")
 
-# ===============================
-# 📌 PILIHAN 3: LOAD GOOGLE DRIVE
-# ===============================
+# PILIHAN 3: LOAD GOOGLE DRIVE
 elif source == "Google Drive":
 
-    # ==== Link Google Drive Bawaan Anda ====
+    # Link Google Drive Bawaan
     default_gdrive_link = "https://drive.google.com/file/d/1GXfcCKjJBGGmCGalJrIsCMKnTe4qujT7/view?usp=sharing"
-
     url = st.sidebar.text_input(
-        "Paste link Google Drive CSV (share link):",
-        value=default_gdrive_link  # <-- otomatis terisi, tidak perlu input
+        "Paste link Google Drive CSV:",
+        value=default_gdrive_link
     )
-
-    # ==== PROSES LANGSUNG TANPA HARUS KLIK APA-APA ====
     if url == default_gdrive_link:
         df = load_from_gdrive(default_gdrive_link)
         if df is not None:
-            st.sidebar.success("🔗 Dataset Google Drive berhasil dimuat otomatis!")
+            st.sidebar.success("🔗 Dataset berhasil dimuat")
         else:
             st.sidebar.error("❌ Gagal memuat dataset default Google Drive.")
     else:
-        # Jika user mengganti link manual
         df = load_from_gdrive(url)
         if df is not None:
             st.sidebar.success("🔗 Berhasil load dari Google Drive!")
         else:
             st.sidebar.error("❌ Link Google Drive tidak valid.")
 
-# ===============================
-# 📌 PILIHAN 4: UPLOAD MANUAL
-# ===============================
+# PILIHAN 4: UPLOAD MANUAL
 elif source == "Upload Manual":
     uploaded = st.sidebar.file_uploader("Upload file CSV", type=["csv"])
     if uploaded:
@@ -177,25 +141,16 @@ elif source == "Upload Manual":
         else:
             st.sidebar.error("❌ File tidak dapat dibaca.")
 
-
-# ===============================
-# 📌 VALIDASI TERAKHIR
-# ===============================
+# VALIDASI TERAKHIR
 if df is None:
     st.error("❌ Dataset belum berhasil dimuat. Silakan pilih sumber data.")
     st.stop()
-
 # Bersihkan dataset
 df.columns = df.columns.str.lower().str.strip()
 df.dropna(inplace=True)
+st.success("✅ Dataset berhasil dimuat")
 
-st.success("✅ Dataset berhasil dimuat dan siap digunakan!")
-
-
-# ==========================================================
 # 2. SIMULASI KOORDINAT (UNTUK PEMETAAN SMART CITY)
-# ==========================================================
-
 @st.cache_data
 def generate_coordinates(df):
     np.random.seed(42)
@@ -205,9 +160,7 @@ def generate_coordinates(df):
 
 df = generate_coordinates(df)
 
-# ==========================================================
 # 3. NAVIGATION TABS
-# ==========================================================
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📊 Korelasi & Insight", 
@@ -217,9 +170,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📑 Statistik"
 ])
 
-# ==========================================================
 # 📊 TAB 1 — Korelasi
-# ==========================================================
 with tab1:
     st.subheader("📊 Analisis Korelasi Fitur Urban")
 
@@ -237,81 +188,106 @@ with tab1:
 # 📍 TAB 2 — PETA
 # ==========================================================
 with tab2:
-
     st.subheader("📍 Peta Distribusi Harga Rumah Boston")
 
-    # Layout 2 kolom: peta kiri, info kanan
+    # Layout 2 kolom: peta kiri (2), info kanan (1)
     col_map, col_info = st.columns([2, 1])
 
-    # ========== Panel Info Kanan ==========
-    with col_info:
-        info_box = st.empty()
-        info_box.info("Klik titik pada peta untuk melihat informasi rumah.")
+# ========== Panel Info Kanan ==========
+with col_info:
+    # Gunakan container kosong agar bisa diupdate isinya
+    info_placeholder = st.empty()
+    
+    # Tampilan awal (Default) dengan Background Warna
+    with info_placeholder.container():
+        st.markdown(
+            """
+            <div style="
+                background-color: rgba(30, 30, 30, 0.8); 
+                padding: 15px; 
+                border-radius: 10px; 
+                border-left: 5px solid #00d4ff;
+                color: white;
+                margin-bottom: 10px;
+            ">
+                <span style="font-size: 18px;">💡</span> 
+                <b>Instruksi:</b><br>
+                Klik salah satu titik pada peta untuk melihat detail informasi rumah secara spesifik.
+            </div>
+            """, 
+            unsafe_allow_html=True
+        )
+        
+        # Tampilan awal (Default)
+        with info_placeholder.container():
+            st.info("💡 Klik titik pada peta untuk melihat detail informasi rumah.")
 
     # ========== BANGUN PETA ==========
     with col_map:
+        # Pusatkan peta di Boston
         m = folium.Map(location=[42.32, -71.05], zoom_start=12)
 
-        # Tambahkan marker
+        # Tambahkan marker (menggunakan CircleMarker agar lebih rapi)
         for idx, row in df.iterrows():
             folium.CircleMarker(
                 location=[row["lat"], row["lon"]],
                 radius=5,
                 color="blue",
                 fill=True,
+                fill_color="cyan",
                 fill_opacity=0.7,
-                tooltip=f"MEDV {row['medv']} | RM {row['rm']} | LSTAT {row['lstat']}%"
+                tooltip=f"MEDV {row['medv']} | RM {row['rm']}"
             ).add_to(m)
 
-        # Gunakan streamlit-folium CLICK EVENT RESMI
+        # Render peta
         map_data = st_folium(
-            m,
-            width=900,
-            height=550,
-            key="smartcity_map",
-            returned_objects=["last_clicked"]
-        )
+        m,
+        use_container_width=True, # Ini kunci untuk menghilangkan lahan kosong
+        height=500,               # Anda tetap bisa mengatur tinggi secara manual
+        key="smartcity_map",
+        returned_objects=["last_clicked"]
+    )
 
     # ========== PROSES KLIKAN ==========
     if map_data and map_data.get("last_clicked"):
         click_lat = map_data["last_clicked"]["lat"]
         click_lon = map_data["last_clicked"]["lng"]
 
-        # cari marker terdekat
+        # Hitung jarak Euclidean untuk mencari titik terdekat
         df["dist"] = ((df["lat"] - click_lat)**2 + (df["lon"] - click_lon)**2)**0.5
-        row = df.loc[df["dist"].idxmin()]  # paling dekat
+        row_data = df.loc[df["dist"].idxmin()]
 
-        # tampilkan info di panel
-        with col_info:
-            info_box.markdown(f"""
-            ### 📝 Informasi Rumah Terpilih
+        # Update panel info dengan background warna (Custom CSS)
+        with info_placeholder.container():
+            st.markdown(
+                f"""
+                <div style="
+                    background-color: #1E1E1E; 
+                    padding: 20px; 
+                    border-radius: 10px; 
+                    border-left: 5px solid #007bff;
+                    color: white;
+                ">
+                    <h3 style="margin-top:0;">📝 Detail Rumah</h3>
+                    <p><b>🏠 Harga (MEDV):</b><br><span style="font-size: 20px; color: #00FF00;">${row_data['medv']}k</span></p>
+                    <p><b>🛏 Kamar (RM):</b><br>{row_data['rm']} Kamar</p>
+                    <p><b>📉 Status Ekonomi (LSTAT):</b><br>{row_data['lstat']}%</p>
+                    <hr style="border: 0.5px solid #444;">
+                    <p style="font-size: 12px; color: #AAA;">
+                        <b>Koordinat:</b><br>
+                        Lat: {row_data['lat']}<br>
+                        Lon: {row_data['lon']}
+                    </p>
+                </div>
+                """, 
+                unsafe_allow_html=True
+            )
 
-            **🏠 Harga Rumah (MEDV)**  
-            `{row['medv']} ribu dolar`  
-            *MEDV = Median value (dalam ribu dolar)*
-
-            **🛏 RM — Average Rooms**  
-            `{row['rm']} kamar`  
-            *Rata-rata jumlah kamar per rumah*
-
-            **📉 LSTAT — % Low Status Population**  
-            `{row['lstat']}% penduduk berstatus ekonomi rendah`
-
-            **📌 Koordinat**  
-            Lat: `{row['lat']}`  
-            Lon: `{row['lon']}`  
-            """)
-
-# ==========================================================
 # 📈 TAB 3 — REGRESI LINEAR
-# ==========================================================
 with tab3:
 
     st.subheader("📈 Model Regresi Linear – Prediksi Harga Rumah")
-
-    # ============================
     # PILIH FITUR REGRESI
-    # ============================
     fitur = st.multiselect(
         "Pilih fitur independen:",
         options=list(df.columns.drop(["medv", "lat", "lon"])),
@@ -392,9 +368,7 @@ with tab3:
 
     st.plotly_chart(fig, use_container_width=True)
 
-    # ============================
     # KOEFISIEN REGRESI
-    # ============================
     st.write("### 🔢 Koefisien Model Regresi")
     coef_df = pd.DataFrame({"Fitur": fitur, "Koefisien": model.coef_})
     st.dataframe(coef_df.style.format({"Koefisien": "{:.5f}"}))
@@ -417,7 +391,6 @@ with tab4:
 
 # ==========================================================
 # 📑 TAB 5 — STATISTIK
-# ==========================================================
 with tab5:
     st.subheader("📑 Statistik Deskriptif")
     st.dataframe(df.describe().T)
