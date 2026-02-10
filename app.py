@@ -287,6 +287,7 @@ with col_info:
 with tab3:
 
     st.subheader("📈 Model Regresi Linear – Prediksi Harga Rumah")
+
     # PILIH FITUR REGRESI
     fitur = st.multiselect(
         "Pilih fitur independen:",
@@ -316,14 +317,18 @@ with tab3:
     y_pred = model.predict(X_test)
 
     # ============================
-    # METRIK EVALUASI
+    # METRIK EVALUASI (LENGKAP)
     # ============================
     r2 = r2_score(y_test, y_pred)
-    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+    mse = mean_squared_error(y_test, y_pred)
+    rmse = np.sqrt(mse)
+    mae = mean_absolute_error(y_test, y_pred)
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3, col4 = st.columns(4)
     col1.metric("R² Score", f"{r2:.3f}")
     col2.metric("RMSE", f"{rmse:.3f}")
+    col3.metric("MAE", f"{mae:.3f}")
+    col4.metric("MSE", f"{mse:.3f}")
 
     # ============================
     # GRAFIK INTERAKTIF PREDIKSI vs AKTUAL
@@ -368,9 +373,14 @@ with tab3:
 
     st.plotly_chart(fig, use_container_width=True)
 
+    # ============================
     # KOEFISIEN REGRESI
+    # ============================
     st.write("### 🔢 Koefisien Model Regresi")
-    coef_df = pd.DataFrame({"Fitur": fitur, "Koefisien": model.coef_})
+    coef_df = pd.DataFrame({
+        "Fitur": fitur,
+        "Koefisien": model.coef_
+    })
     st.dataframe(coef_df.style.format({"Koefisien": "{:.5f}"}))
 # ==========================================================
 # 🔢 TAB 4 — PREDIKSI MANUAL
@@ -394,3 +404,4 @@ with tab4:
 with tab5:
     st.subheader("📑 Statistik Deskriptif")
     st.dataframe(df.describe().T)
+
